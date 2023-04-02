@@ -1,6 +1,18 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
+const express = require('express')
 const config = require('./config');
+
+const server = express()
+const port = process.env.PORT || 8080;
+
+server.get('/', (req, res) => {
+  res.send('Hello World!')
+});
+
+server.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+});
 
 const app = new App({
   token: config.bot.botToken,
