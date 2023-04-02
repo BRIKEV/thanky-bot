@@ -17,7 +17,7 @@ COPY . .
 ENV SLACK_APP_TOKEN=your-app-token-here
 
 # Set the environment variable for the Slack bot token
-ENV SLACK_BOT_TOKEN=your-bot-token-here
+ENV BOT_TOKEN=your-bot-token-here
 
 # Set the command to start the application
 CMD ["npm", "start"]
