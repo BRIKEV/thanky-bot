@@ -1,41 +1,38 @@
-name: Deploy to Cloud Run
+name: Deploy Google cloud run
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
 
+    name: Setup Gcloud Account
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_APP_NAME }}
     steps:
+
+    - name: Login
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_email: ${{ secrets.GCP_EMAIL }}
+        service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+
+    - name: Configure Docker
+      run: gcloud auth configure-docker --quiet
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
-      with:
-        project_id: your-project-id
-        service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-        export_default_credentials: true
+    - name: Build Docker image
+      run: docker build . -t $IMAGE_NAME
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: gcr.io/your-project-id/your-image-name:${{ github.sha }}
-        secrets: |
-          ${{ secrets.GCR_USERNAME }}=${{ secrets.GCR_PASSWORD }}
+    - name: Push Docker image
+      run: docker push $IMAGE_NAME
 
-    - name: Deploy to Cloud Run
-      uses: google-github-actions/deploy-cloudrun@main
-      with:
-        image: gcr.io/your-project-id/your-image-name:${{ github.sha }}
-        region: your-region
-        service_name: your-service-name
-        platform: managed
-        allow_unauthenticated: true
-        project_id: your-project-id
-        service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+    - name: Deploy Docker image
+      run: gcloud run deploy ${{ secrets.GCP_PROJECT_ID }} --image $IMAGE_NAME --region europe-west1 --platform managed
