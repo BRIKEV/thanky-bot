@@ -25,7 +25,7 @@ app.event('message', async ({ event, logger }) => {
 });
 
 (async () => {
-  await app.start(3000);
+  await app.start(8080);
   console.log('⚡️ Bolt app started');
 
   // Listens to incoming messages that contain "hello"
