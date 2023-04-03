@@ -1,23 +1,26 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
-const express = require('express')
 const config = require('./config');
 
-const server = express()
 const port = process.env.PORT || 8080;
-
-server.get('/', (req, res) => {
-  res.send('Hello World!')
-});
-
-server.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-});
 
 const app = new App({
   token: config.bot.botToken,
   appToken: config.bot.slackApptoken,
   socketMode: true,
+  installerOptions: {
+    port,
+  },
+  customRoutes: [
+    {
+      path: '/',
+      method: ['GET'],
+      handler: (req, res) => {
+        res.writeHead(200);
+        res.end('Health check!');
+      },
+    },
+  ],
 });
 
 // When a user joins the team, send a message in a predefined channel asking them to introduce themselves
@@ -37,7 +40,7 @@ app.event('message', async ({ event, logger }) => {
 });
 
 (async () => {
-  await app.start(8080);
+  await app.start();
   console.log('⚡️ Bolt app started');
 
   // Listens to incoming messages that contain "hello"
