@@ -1,7 +1,7 @@
 {
   "name": "thanky-bot",
   "version": "1.0.0",
-  "description": "a bot to retrieve thanky messages and increase points",
+  "description": "bot to retrieve thanky messages and increase points",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
