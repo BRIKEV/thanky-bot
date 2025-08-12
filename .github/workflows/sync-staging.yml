@@ -1,35 +1,27 @@
-name: Sync staging with main (fast-forward)
+name: Deploy to staging
 
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: write  # Necesario para que GITHUB_TOKEN pueda hacer push
-
 jobs:
-  sync-staging:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout with GITHUB_TOKEN
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necesario para hacer fast-forward real
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Setup Git user (bot)
+      - name: Setup Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Staging Sync Bot"
+          git config user.email "staging-sync-bot@users.noreply.github.com"
 
-      - name: Fast-forward staging to main
+      - name: Push to staging
         run: |
-          git fetch origin
+          git fetch origin staging
           git checkout staging
-          if git merge --ff-only origin/main; then
-            echo "Fast-forward successful. Pushing..."
-            git push origin staging
-          else
-            echo "No fast-forward possible. Skipping push."
-          fi
+          git merge main --no-edit
+          git push origin staging
