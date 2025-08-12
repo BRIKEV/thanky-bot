@@ -6,30 +6,41 @@ on:
       - main
 
 permissions:
-  contents: write  # Necesario para que GITHUB_TOKEN pueda hacer push
+  contents: write  # Necesario para que el push funcione
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Clonamos el repo con la deploy key y todo el historial (fetch-depth: 0 es clave)
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 0
 
+      # 2️⃣ Configuramos identidad del bot
       - name: Setup Git
         run: |
           git config user.name "Staging Sync Bot"
           git config user.email "staging-sync-bot@users.noreply.github.com"
 
+      # 3️⃣ Sincronizamos staging con main solo si es fast-forward posible
       - name: Push to staging
         run: |
+          # Traemos lo último de remoto
           git fetch origin
-          git checkout staging
+
+          # Si la rama staging existe, la usamos; si no, la creamos desde remoto
+          git checkout staging || git checkout -b staging origin/staging
+
+          # Intentamos fast-forward desde main
           if git merge --ff-only origin/main; then
-            echo "Fast-forward successful. Pushing..."
+            echo "✅ Fast-forward successful. Pushing to staging..."
             git push origin staging
           else
-            echo "No fast-forward possible. Skipping push."
+            echo "❌ No fast-forward possible. Manual intervention required."
+            # Si quieres que simplemente no haga nada, comenta la siguiente línea
+            exit 1
           fi
