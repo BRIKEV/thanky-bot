@@ -21,7 +21,11 @@ jobs:
 
       - name: Push to staging
         run: |
-          git fetch origin staging
+          git fetch origin
           git checkout staging
-          git merge main --no-edit
-          git push origin staging
+          if git merge --ff-only origin/main; then
+            echo "Fast-forward successful. Pushing..."
+            git push origin staging
+          else
+            echo "No fast-forward possible. Skipping push."
+          fi
