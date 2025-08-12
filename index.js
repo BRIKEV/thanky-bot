@@ -26,7 +26,7 @@ const app = new App({
 // When a user joins the team, send a message in a predefined channel asking them to introduce themselves
 app.event('message', async ({ event, logger }) => {
   try {
-    console.log(event);
+    console.log('evento', event);
     // Call chat.postMessage with the built-in client
     // const result = await client.chat.postMessage({
     //   channel: welcomeChannelId,
